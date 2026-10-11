@@ -1,0 +1,20 @@
+# Shared by every die through "mtl_override", so a Blender re-export of a model cannot drop the tint indices.
+# Tint 0 is the face colour, and tint 1 the detail colour, which the edges and numbers share.
+
+newmtl material_1
+Ka 1.000000 1.000000 1.000000
+illum 2
+map_Kd #material_1
+neoforge_TintIndex 1
+
+newmtl material_2
+Ka 1.000000 1.000000 1.000000
+illum 2
+map_Kd #material_2
+neoforge_TintIndex 0
+
+newmtl material_3
+Ka 1.000000 1.000000 1.000000
+illum 2
+map_Kd #material_3
+neoforge_TintIndex 1

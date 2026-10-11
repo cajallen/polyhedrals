@@ -1,0 +1,9 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "polyhedrals:recipes_enabled"
+    }
+  ],
+  "type": "polyhedrals:dice_crafting",
+  "category": "misc"
+}

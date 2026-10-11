@@ -1,0 +1,10 @@
+{
+  "item.polyhedrals.d4": "D4",
+  "item.polyhedrals.d6": "D6",
+  "item.polyhedrals.d8": "D8",
+  "item.polyhedrals.d10": "D10",
+  "item.polyhedrals.d12": "D12",
+  "item.polyhedrals.d20": "D20",
+  "item.polyhedrals.d100": "D100",
+  "entity.polyhedrals.dice": "Die"
+}

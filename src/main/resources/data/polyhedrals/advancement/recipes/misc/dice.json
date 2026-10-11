@@ -1,0 +1,45 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "polyhedrals:recipes_enabled"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_bone": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:bone"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_bone"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "polyhedrals:d20_from_black_dye",
+      "polyhedrals:d20_from_gray_dye",
+      "polyhedrals:d20_from_light_gray_dye",
+      "polyhedrals:d20_from_white_dye",
+      "polyhedrals:d20_from_brown_dye",
+      "polyhedrals:d20_from_red_dye",
+      "polyhedrals:d20_from_orange_dye",
+      "polyhedrals:d20_from_yellow_dye",
+      "polyhedrals:d20_from_lime_dye",
+      "polyhedrals:d20_from_cyan_dye",
+      "polyhedrals:d20_from_green_dye",
+      "polyhedrals:d20_from_light_blue_dye",
+      "polyhedrals:d20_from_blue_dye",
+      "polyhedrals:d20_from_purple_dye",
+      "polyhedrals:d20_from_magenta_dye",
+      "polyhedrals:d20_from_pink_dye"
+    ]
+  }
+}

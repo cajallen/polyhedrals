@@ -1,0 +1,32 @@
+{
+  "loader": "neoforge:obj",
+  "model": "polyhedrals:models/item/d4.obj",
+  "mtl_override": "dice.mtl",
+  "textures": {
+    "material_1": "polyhedrals:item/detail",
+    "material_2": "polyhedrals:item/face",
+    "material_3": "polyhedrals:item/d4_numbers"
+  },
+  "display": {
+    "ground": {
+      "rotation": [90, 0, 0],
+      "translation": [0, -3, 0],
+      "scale": [0.25, 0.25, 0.25]
+    },
+    "thirdperson_righthand": {
+      "rotation": [0, 0, 0],
+      "translation": [0, 0, 0],
+      "scale": [0.25, 0.25, 0.25]
+    },
+    "firstperson_righthand": {
+      "rotation": [0, 0, 0],
+      "translation": [0, 0, 0],
+      "scale": [0.25, 0.25, 0.25]
+    },
+    "gui": {
+      "rotation": [30.22, 74.45, -0.2],
+      "translation": [11.335, -1.747, 2.637],
+      "scale": [0.7284, 0.7284, 0.7284]
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "polyhedrals:recipes_enabled"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "polyhedrals:d20",
+  "ingredients": [
+    {
+      "item": "minecraft:bone"
+    },
+    {
+      "tag": "c:dyes/lime"
+    }
+  ],
+  "result": {
+    "id": "polyhedrals:d20",
+    "count": 1,
+    "components": {
+      "polyhedrals:two_tone_colors": {
+        "face_color": 8439583,
+        "detail_color": 4219663
+      }
+    }
+  }
+}
