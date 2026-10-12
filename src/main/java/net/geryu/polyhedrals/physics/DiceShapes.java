@@ -49,7 +49,7 @@ public final class DiceShapes {
 
     static String modelNameFor(int sides) {
         return switch (sides) {
-            case 4, 6, 8, 10, 12, 20 -> "d" + sides;
+            case 4, 6, 8, 10, 12, 16, 20 -> "d" + sides;
             case 100 -> "d10";
             default -> "d20";
         };

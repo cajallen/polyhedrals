@@ -36,7 +36,7 @@ class DicePhysicsWorldTest {
     }
 
     @ParameterizedTest(name = "a d{0} thrown onto a floor comes to rest on it")
-    @ValueSource(ints = {4, 6, 8, 10, 12, 20, 100})
+    @ValueSource(ints = {4, 6, 8, 10, 12, 16, 20, 100})
     void diceLandAndSettle(int sides) {
         DiceShapes.Shape shape = DiceShapes.forSides(sides);
 

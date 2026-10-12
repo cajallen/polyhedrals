@@ -58,13 +58,13 @@ class DiceGeometryTest {
     }
 
     @ParameterizedTest(name = "the d{0} model hulls to {1} faces")
-    @CsvSource({"4,4", "6,6", "8,8", "10,10", "12,12", "20,20", "100,10"})
+    @CsvSource({"4,4", "6,6", "8,8", "10,10", "12,12", "16,16", "20,20", "100,10"})
     void diceModelsHullToTheExpectedFaceCount(int sides, int expectedFaces) {
         assertEquals(expectedFaces, DiceShapes.forSides(sides).faceCount());
     }
 
     @ParameterizedTest(name = "the d{0} shape is centred and sanely sized")
-    @ValueSource(ints = {4, 6, 8, 10, 12, 20, 100})
+    @ValueSource(ints = {4, 6, 8, 10, 12, 16, 20, 100})
     void diceShapesAreCentredAtTheCentreOfVolume(int sides) {
         DiceShapes.Shape shape = DiceShapes.forSides(sides);
 

@@ -209,6 +209,7 @@ public class DiceEntity extends Entity {
                         random.nextGaussian() * DiceTuning.THROW_SPIN,
                         random.nextGaussian() * DiceTuning.THROW_SPIN,
                         random.nextGaussian() * DiceTuning.THROW_SPIN));
+        physics.setOrientation(DiceOrientation.random(random::nextGaussian));
         setDeltaMovement(Vec3.ZERO);
     }
 

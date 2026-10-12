@@ -49,7 +49,7 @@ public class Polyhedrals {
     public static final Supplier<DataComponentType<DiceColors>> TWO_TONE_COLORS =
             COMPONENTS.registerComponentType("two_tone_colors", builder -> builder.persistent(DiceColors.CODEC));
 
-    public static final List<Integer> DIE_SIDES = List.of(4, 6, 8, 10, 12, 20, 100);
+    public static final List<Integer> DIE_SIDES = List.of(4, 6, 8, 10, 12, 16, 20, 100);
     public static final Map<Integer, DeferredItem<Item>> DICE = new LinkedHashMap<>();
 
     static {

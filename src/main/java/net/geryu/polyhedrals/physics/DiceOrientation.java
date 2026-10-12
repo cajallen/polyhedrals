@@ -3,11 +3,18 @@ package net.geryu.polyhedrals.physics;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.util.function.DoubleSupplier;
+
 public final class DiceOrientation {
     private static final Vector3f DOWN = new Vector3f(0, -1, 0);
     private static final Vector3f UP = new Vector3f(0, 1, 0);
 
     private DiceOrientation() {}
+
+    public static Quaternionf random(DoubleSupplier gaussian) {
+        return new Quaternionf((float) gaussian.getAsDouble(), (float) gaussian.getAsDouble(),
+                (float) gaussian.getAsDouble(), (float) gaussian.getAsDouble()).normalize();
+    }
 
     public static Quaternionf restingRotation(Quaternionf current, DiceShapes.Shape shape) {
         Vector3f downmost = worldNormal(current, shape, faceMostAlong(current, shape, DOWN));

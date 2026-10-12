@@ -45,7 +45,7 @@ public final class DiceUvUnwrapper {
 
     private static final double DECAL_LIFT = 0.004;
 
-    private static final int[] DIE_TYPES = {4, 6, 8, 10, 12, 20};
+    private static final int[] DIE_TYPES = {4, 6, 8, 10, 12, 16, 20};
     private static final String FACE_MATERIAL = "material_2";
     private static final String DECAL_MATERIAL = "material_3";
 

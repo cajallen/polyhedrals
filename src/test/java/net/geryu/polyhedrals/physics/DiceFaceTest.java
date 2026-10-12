@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DiceFaceTest {
     @ParameterizedTest(name = "a d{0} carries each number once, opposite faces summing to one more than the highest")
-    @ValueSource(ints = {4, 6, 8, 10, 12, 20})
+    @ValueSource(ints = {4, 6, 8, 10, 12, 16, 20})
     void numbering(int sides) {
         DiceShapes.Shape shape = DiceShapes.forSides(sides);
         int[] values = DiceFaceNumbering.valuesFor(shape);
@@ -33,7 +33,7 @@ class DiceFaceTest {
     }
 
     @ParameterizedTest(name = "a d{0} levelled from any orientation reads a face, and every face is reachable")
-    @ValueSource(ints = {4, 6, 8, 10, 12, 20, 100})
+    @ValueSource(ints = {4, 6, 8, 10, 12, 16, 20, 100})
     void levelledDiceReadEveryFace(int sides) {
         DiceShapes.Shape shape = DiceShapes.forSides(sides);
         Random rng = new Random(4242);
@@ -50,7 +50,7 @@ class DiceFaceTest {
     }
 
     @ParameterizedTest(name = "a d{0} placed on any roll reads that roll, resting above the ground")
-    @ValueSource(ints = {4, 6, 8, 10, 12, 20, 100})
+    @ValueSource(ints = {4, 6, 8, 10, 12, 16, 20, 100})
     void placedRollReadsBack(int sides) {
         DiceShapes.Shape shape = DiceShapes.forSides(sides);
         for (int roll = 1; roll <= sides; roll++) {
