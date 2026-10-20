@@ -73,11 +73,7 @@ arithmetic like `(2*3)d6`, but can't contain dice. Terms take these modifiers:
 | `r<N`    | `3d6r<3` | reroll dice below N       |
 | `r>N`    | `3d6r>5` | reroll dice above N       |
 
-Rerolls are drawn without throwing another die.
-
 ## Events
-
-All are posted on `NeoForge.EVENT_BUS`.
 
 | Event | When | Use it to |
 |---|---|---|
