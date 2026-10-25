@@ -50,6 +50,18 @@ public class RollContext {
         termTotals.remove(diceNodeId);
     }
 
+    public List<Integer> rollMissing(List<PhysicalDice> dice) {
+        List<Integer> drawn = new ArrayList<>();
+        for (PhysicalDice term : dice) {
+            for (int i = getPhysicalResults(term.nodeId()).size(); i < term.count(); i++) {
+                int result = roll(term.sides());
+                addPhysicalResult(term.nodeId(), result);
+                drawn.add(result);
+            }
+        }
+        return drawn;
+    }
+
     int termTotal(int diceNodeId, IntSupplier total) {
         if (!physical)
             return total.getAsInt();

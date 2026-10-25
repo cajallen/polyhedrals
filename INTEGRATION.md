@@ -6,7 +6,7 @@ repositories {
 }
 
 dependencies {
-    implementation "maven.modrinth:polyhedrals:0.1.1"
+    implementation "maven.modrinth:polyhedrals:0.1.2"
 }
 ```
 

@@ -135,7 +135,7 @@ public class RollBuilder {
         if (count > MAX_DICE || count < 1 || dice.stream().anyMatch(d -> d.sides() < 1 || d.sides() > MAX_SIDES))
             return null;
 
-        UUID groupId = RollManager.startGroup(owner, count, root,
+        UUID groupId = RollManager.startGroup(owner, dice, root,
                 broadcast != null ? broadcast : PolyhedralsConfig.BROADCAST.get());
         int[] presetFaces = preset == null ? null
                 : preset.facesFor(root, dice, sides -> PolyhedralsAPI.RANDOM.nextInt(sides) + 1);

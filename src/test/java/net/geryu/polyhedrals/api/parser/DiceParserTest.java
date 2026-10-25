@@ -25,6 +25,10 @@ class DiceParserTest {
         return sides -> values[next[0]++];
     }
 
+    private static int[] faces(String faces) {
+        return faces.isBlank() ? new int[0] : Arrays.stream(faces.split(" ")).mapToInt(Integer::parseInt).toArray();
+    }
+
     @ParameterizedTest(name = "{0} landing [{1}] totals {2}")
     @CsvSource({
             "2+3*4, '', 14",
@@ -40,8 +44,32 @@ class DiceParserTest {
             "7/0, '', 0"})
     void physicalRolls(String expression, String faces, int total) {
         ASTNode root = DiceParser.parse(expression);
-        int[] landed = faces.isBlank() ? new int[0] : Arrays.stream(faces.split(" ")).mapToInt(Integer::parseInt).toArray();
-        assertEquals(total, root.evaluate(landed(root, sides -> 3, landed)));
+        assertEquals(total, root.evaluate(landed(root, sides -> 3, faces(faces))));
+    }
+
+    @ParameterizedTest(name = "{0} landing [{1}] is shown as {2}")
+    @CsvSource({
+            "(1d6+2)*1d4, 1 3, (1 + 2) * 3",
+            "2*3+4, '', 2 * 3 + 4",
+            "2-(3-1), '', 2 - (3 - 1)",
+            "8/(2*2), '', 8 / (2 * 2)",
+            "-5+10, '', -5 + 10",
+            "2*-3, '', 2 * (-3)"})
+    void workingKeepsItsGrouping(String expression, String faces, String shown) {
+        ASTNode root = DiceParser.parse(expression);
+        assertEquals(shown, root.toString(landed(root, sides -> 3, faces(faces))));
+    }
+
+    @Test
+    void diceThatNeverLandedAreRolledWithoutThrowing() {
+        ASTNode root = DiceParser.parse("1d20+2d6");
+        List<PhysicalDice> dice = new ArrayList<>();
+        root.collectPhysicalDice(new RollContext(sides -> 1), dice);
+        RollContext ctx = RollContext.physical(sides -> sides / 2);
+        ctx.addPhysicalResult(2, 5);
+
+        assertEquals(List.of(10, 3), ctx.rollMissing(dice));
+        assertEquals(18, root.evaluate(ctx));
     }
 
     @Test

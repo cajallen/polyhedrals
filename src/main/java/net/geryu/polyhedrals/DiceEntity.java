@@ -13,6 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ExtraCodecs;
@@ -146,15 +147,28 @@ public class DiceEntity extends Entity {
     }
 
     public Entity getOwner() {
-        if (ownerId == null || !(level() instanceof ServerLevel serverLevel))
-            return null;
-        return serverLevel.getEntity(ownerId);
+        return ownerId != null && level() instanceof ServerLevel serverLevel
+                ? findEntity(serverLevel.getServer(), ownerId) : null;
+    }
+
+    static Entity findEntity(MinecraftServer server, UUID id) {
+        for (ServerLevel level : server.getAllLevels()) {
+            Entity entity = level.getEntity(id);
+            if (entity != null)
+                return entity;
+        }
+        return null;
     }
 
     @Override
     public void tick() {
         if (level().isClientSide) {
             advanceClientInterpolation();
+            return;
+        }
+        // Our roll has already finished, exit
+        if (!landed && rollGroup != null && !RollManager.isActive(rollGroup)) {
+            cancel();
             return;
         }
         if (!launched) {
@@ -177,6 +191,8 @@ public class DiceEntity extends Entity {
             }
             if (!canPickup || returnToThrower()) {
                 discard();
+            } else {
+                physics.settle();
             }
             return;
         }
