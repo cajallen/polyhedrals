@@ -84,7 +84,7 @@ public class Polyhedrals {
     }
 
     private static void addCreative(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
+        if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             DICE.values().forEach(event::accept);
         }
     }

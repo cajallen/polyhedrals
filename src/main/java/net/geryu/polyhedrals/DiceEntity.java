@@ -72,14 +72,25 @@ public class DiceEntity extends Entity {
     private int ticksAtRest;
     private boolean claimed;
 
-    private Quaternionf clientPrevOrientation = new Quaternionf();
-    private Quaternionf clientOrientation = new Quaternionf();
+    private Quaternionf clientPrevOrientation;
+    private Quaternionf clientOrientation;
     private Vec3 lerpTarget;
 
     public DiceEntity(EntityType<? extends DiceEntity> type, Level level) {
         super(type, level);
         this.noPhysics = true;
         this.noCulling = true;
+        if (!level.isClientSide) {
+            entityData.set(DATA_ORIENTATION, DiceOrientation.random(random::nextGaussian));
+        }
+    }
+
+    @Override
+    public void onAddedToLevel() {
+        super.onAddedToLevel();
+        if (!launched && presetNatural == 0) {
+            launch();
+        }
     }
 
     @Override
@@ -172,11 +183,7 @@ public class DiceEntity extends Entity {
             return;
         }
         if (!launched) {
-            if (presetNatural > 0) {
-                placeAtRest();
-            } else {
-                launch();
-            }
+            placeAtRest();
         }
         if (physics == null) {
             if (landed) {
@@ -225,7 +232,7 @@ public class DiceEntity extends Entity {
                         random.nextGaussian() * DiceTuning.THROW_SPIN,
                         random.nextGaussian() * DiceTuning.THROW_SPIN,
                         random.nextGaussian() * DiceTuning.THROW_SPIN));
-        physics.setOrientation(DiceOrientation.random(random::nextGaussian));
+        physics.setOrientation(entityData.get(DATA_ORIENTATION));
         setDeltaMovement(Vec3.ZERO);
     }
 
@@ -498,11 +505,14 @@ public class DiceEntity extends Entity {
             setPos(lerpTarget);
             lerpTarget = null;
         }
-        clientPrevOrientation = clientOrientation;
-        clientOrientation = new Quaternionf(entityData.get(DATA_ORIENTATION));
+        Quaternionf synced = new Quaternionf(entityData.get(DATA_ORIENTATION));
+        clientPrevOrientation = clientOrientation != null ? clientOrientation : synced;
+        clientOrientation = synced;
     }
 
     public Quaternionf getRenderOrientation(float partialTick) {
+        if (clientOrientation == null)
+            return new Quaternionf(entityData.get(DATA_ORIENTATION));
         return new Quaternionf(clientPrevOrientation).slerp(clientOrientation, partialTick);
     }
 

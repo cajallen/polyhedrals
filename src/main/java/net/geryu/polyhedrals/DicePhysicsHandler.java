@@ -6,6 +6,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.BlockCollisions;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -24,6 +27,7 @@ import java.util.Set;
 @EventBusSubscriber(modid = Polyhedrals.MODID)
 public final class DicePhysicsHandler {
     private static final Map<ServerLevel, DicePhysicsWorld> WORLDS = new IdentityHashMap<>();
+    private static final Map<Block, Double> BOUNCE = new IdentityHashMap<>();
 
     private DicePhysicsHandler() {}
 
@@ -51,17 +55,45 @@ public final class DicePhysicsHandler {
         playImpacts(level, physics);
     }
 
+    private record SurfacedShape(VoxelShape shape, DicePhysicsWorld.Surface surface) {}
+
     private static void collectBlockBoxes(ServerLevel level, DicePhysicsWorld.Box region,
                                           Set<DicePhysicsWorld.Box> out) {
         AABB area = new AABB(region.minX(), region.minY(), region.minZ(),
                 region.maxX(), region.maxY(), region.maxZ());
-        for (VoxelShape shape : level.getBlockCollisions(null, area)) {
-            if (shape.isEmpty()) continue;
-            for (AABB box : shape.toAabbs()) {
+        BlockCollisions<SurfacedShape> collisions = new BlockCollisions<>(level, null, area, false,
+                (pos, shape) -> new SurfacedShape(shape, surfaceAt(level, pos)));
+        while (collisions.hasNext()) {
+            SurfacedShape found = collisions.next();
+            if (found.shape().isEmpty()) continue;
+            for (AABB box : found.shape().toAabbs()) {
                 out.add(new DicePhysicsWorld.Box(box.minX, box.minY, box.minZ,
-                        box.maxX, box.maxY, box.maxZ));
+                        box.maxX, box.maxY, box.maxZ, found.surface()));
             }
         }
+    }
+
+    private static DicePhysicsWorld.Surface surfaceAt(ServerLevel level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        Block block = state.getBlock();
+        double grip = (1 - state.getFriction(level, pos, null)) / (1 - Blocks.STONE.getFriction());
+        double friction = DiceTuning.FRICTION * grip / block.getSpeedFactor();
+        double drag = DiceTuning.STICKY_DRAG * (1 - block.getJumpFactor());
+        double bounce = drag > 0 ? 0 : Mth.clamp(bounceOf(level, block), DiceTuning.RESTITUTION, 1.0);
+        return new DicePhysicsWorld.Surface(friction, bounce, drag);
+    }
+
+    private static double bounceOf(ServerLevel level, Block block) {
+        return BOUNCE.computeIfAbsent(block, unused -> {
+            DiceEntity probe = new DiceEntity(Polyhedrals.DICE_ENTITY.get(), level);
+            probe.setDeltaMovement(0, -1, 0);
+            try {
+                block.updateEntityAfterFallOn(level, probe);
+            } catch (RuntimeException e) {
+                return 0.0;
+            }
+            return probe.getDeltaMovement().y;
+        });
     }
 
     private static void playImpacts(ServerLevel level, DicePhysicsWorld physics) {

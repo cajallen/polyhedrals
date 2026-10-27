@@ -30,7 +30,15 @@ public final class DicePhysicsWorld implements AutoCloseable {
 
     private static boolean odeStarted;
 
-    public record Box(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {}
+    public record Surface(double friction, double bounce, double drag) {
+        public static final Surface DEFAULT = new Surface(DiceTuning.FRICTION, DiceTuning.RESTITUTION, 0);
+    }
+
+    public record Box(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, Surface surface) {
+        public Box(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
+            this(minX, minY, minZ, maxX, maxY, maxZ, Surface.DEFAULT);
+        }
+    }
 
     @FunctionalInterface
     public interface TerrainSource {
@@ -125,6 +133,9 @@ public final class DicePhysicsWorld implements AutoCloseable {
             space.collide(null, this::onPotentialContact);
             world.quickStep(substep);
             contactGroup.empty();
+            for (Die die : dice) {
+                die.applyDrag(substep);
+            }
             accumulator -= substep;
         }
 
@@ -155,6 +166,7 @@ public final class DicePhysicsWorld implements AutoCloseable {
                     (box.minX() + box.maxX()) * 0.5,
                     (box.minY() + box.maxY()) * 0.5,
                     (box.minZ() + box.maxZ()) * 0.5);
+            geom.setData(box.surface());
             geom.enable();
         }
         for (int i = used; i < terrainPool.size(); i++) {
@@ -182,12 +194,13 @@ public final class DicePhysicsWorld implements AutoCloseable {
         if (b1 == null && b2 == null)
             return;
 
+        Surface surface = surfaceBetween(o1, o2);
         for (DContact contact : contactBuffer) {
             contact.surface.mode = OdeConstants.dContactBounce
                     | OdeConstants.dContactSoftCFM
                     | OdeConstants.dContactApprox1;
-            contact.surface.mu = DiceTuning.FRICTION;
-            contact.surface.bounce = DiceTuning.RESTITUTION;
+            contact.surface.mu = surface.friction();
+            contact.surface.bounce = surface.bounce();
             contact.surface.bounce_vel = DiceTuning.BOUNCE_THRESHOLD;
             contact.surface.soft_cfm = 0.002;
         }
@@ -198,6 +211,22 @@ public final class DicePhysicsWorld implements AutoCloseable {
             recordImpact(contact, b1, b2);
             OdeHelper.createContactJoint(world, contactGroup, contact).attach(b1, b2);
         }
+        if (count > 0 && surface.drag() > 0) {
+            for (DBody body : new DBody[] {b1, b2}) {
+                if (body != null) {
+                    Die die = (Die) body.getData();
+                    die.drag = Math.max(die.drag, surface.drag());
+                }
+            }
+        }
+    }
+
+    private static Surface surfaceBetween(DGeom o1, DGeom o2) {
+        if (o1.getBody() == null)
+            return (Surface) o1.getData();
+        if (o2.getBody() == null)
+            return (Surface) o2.getData();
+        return Surface.DEFAULT;
     }
 
     private void recordImpact(DContact contact, DBody b1, DBody b2) {
@@ -230,6 +259,7 @@ public final class DicePhysicsWorld implements AutoCloseable {
         private final DBody body;
         private final DConvex geom;
         private boolean settled;
+        private double drag;
 
         private final Vector3d[] restPositions = new Vector3d[DiceTuning.REST_WINDOW];
         private final Quaternionf[] restOrientations = new Quaternionf[DiceTuning.REST_WINDOW];
@@ -292,6 +322,17 @@ public final class DicePhysicsWorld implements AutoCloseable {
                         velocity.get1() * scale,
                         velocity.get2() * scale);
             }
+        }
+
+        private void applyDrag(double seconds) {
+            if (drag > 0 && !settled) {
+                double retained = Math.exp(-drag * seconds);
+                var velocity = body.getLinearVel();
+                body.setLinearVel(velocity.get0() * retained, velocity.get1() * retained, velocity.get2() * retained);
+                var spin = body.getAngularVel();
+                body.setAngularVel(spin.get0() * retained, spin.get1() * retained, spin.get2() * retained);
+            }
+            drag = 0;
         }
 
         private void recordRestSample() {

@@ -1,5 +1,6 @@
 package net.geryu.polyhedrals.physics;
 
+import org.joml.Quaternionf;
 import org.joml.Vector3d;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -15,15 +16,19 @@ class DicePhysicsWorldTest {
     private static final double FLOOR_TOP = 1.0;
     private static final int TICKS_PER_SECOND = 20;
 
-    private static final DicePhysicsWorld.TerrainSource FLOOR = (region, out) -> {
-        if (region.minY() >= FLOOR_TOP || region.maxY() <= 0)
-            return;
-        for (int x = (int) Math.floor(region.minX()); x <= (int) Math.floor(region.maxX()); x++) {
-            for (int z = (int) Math.floor(region.minZ()); z <= (int) Math.floor(region.maxZ()); z++) {
-                out.add(new DicePhysicsWorld.Box(x, 0, z, x + 1, FLOOR_TOP, z + 1));
+    private static final DicePhysicsWorld.TerrainSource FLOOR = floorOf(DicePhysicsWorld.Surface.DEFAULT);
+
+    private static DicePhysicsWorld.TerrainSource floorOf(DicePhysicsWorld.Surface surface) {
+        return (region, out) -> {
+            if (region.minY() >= FLOOR_TOP || region.maxY() <= 0)
+                return;
+            for (int x = (int) Math.floor(region.minX()); x <= (int) Math.floor(region.maxX()); x++) {
+                for (int z = (int) Math.floor(region.minZ()); z <= (int) Math.floor(region.maxZ()); z++) {
+                    out.add(new DicePhysicsWorld.Box(x, 0, z, x + 1, FLOOR_TOP, z + 1, surface));
+                }
             }
-        }
-    };
+        };
+    }
 
     private static void run(DicePhysicsWorld world, double seconds) {
         for (int tick = 0; tick < seconds * TICKS_PER_SECOND; tick++) {
@@ -135,6 +140,65 @@ class DicePhysicsWorldTest {
             double separation = a.position().distance(b.position());
             assertTrue(separation > shape.boundingRadius(), "two dice ended up inside each other, " + separation + " apart");
         }
+    }
+
+    private static double reboundHeight(DicePhysicsWorld.Surface surface) {
+        DicePhysicsWorld.TerrainSource floor = floorOf(surface);
+        try (DicePhysicsWorld world = new DicePhysicsWorld()) {
+            DicePhysicsWorld.Die die = world.addDie(DiceShapes.forSides(6),
+                    new Vector3d(0.5, 3.0, 0.5), new Vector3d(), new Vector3d());
+
+            boolean landed = false;
+            for (int tick = 0; tick < 3 * TICKS_PER_SECOND && !landed; tick++) {
+                world.step(floor);
+                landed = !world.impacts().isEmpty();
+            }
+            assertTrue(landed, "the die never reached the floor");
+
+            double landedAt = die.position().y;
+            double highest = landedAt;
+            for (int tick = 0; tick < TICKS_PER_SECOND; tick++) {
+                world.step(floor);
+                highest = Math.max(highest, die.position().y);
+            }
+            return highest - landedAt;
+        }
+    }
+
+    private static double slideDistance(DicePhysicsWorld.Surface surface) {
+        DicePhysicsWorld.TerrainSource floor = floorOf(surface);
+        try (DicePhysicsWorld world = new DicePhysicsWorld()) {
+            DiceShapes.Shape shape = DiceShapes.forSides(6);
+            double resting = FLOOR_TOP + DiceOrientation.restingHeight(new Quaternionf(), shape);
+            DicePhysicsWorld.Die die = world.addDie(shape,
+                    new Vector3d(0.5, resting, 0.5), new Vector3d(4, 0, 0), new Vector3d());
+            for (int tick = 0; tick < 3 * TICKS_PER_SECOND; tick++) {
+                world.step(floor);
+            }
+            return die.position().x - 0.5;
+        }
+    }
+
+    @Test
+    void aBouncySurfaceThrowsDiceBackUp() {
+        double bouncy = reboundHeight(new DicePhysicsWorld.Surface(DiceTuning.FRICTION, 0.8, 0));
+        double ordinary = reboundHeight(DicePhysicsWorld.Surface.DEFAULT);
+        assertTrue(bouncy > 0.5 && bouncy > 5 * ordinary,
+                "bounced " + bouncy + " off a bouncy floor against " + ordinary + " off an ordinary one");
+    }
+
+    @Test
+    void diceSlideFurtherOnASlipperySurface() {
+        double slippery = slideDistance(new DicePhysicsWorld.Surface(DiceTuning.FRICTION * 0.05, DiceTuning.RESTITUTION, 0));
+        double ordinary = slideDistance(DicePhysicsWorld.Surface.DEFAULT);
+        assertTrue(slippery > 2 * ordinary, "slid " + slippery + " on a slippery floor against " + ordinary);
+    }
+
+    @Test
+    void aStickySurfaceHoldsDiceInPlace() {
+        double sticky = slideDistance(new DicePhysicsWorld.Surface(DiceTuning.FRICTION, 0, DiceTuning.STICKY_DRAG / 2));
+        double ordinary = slideDistance(new DicePhysicsWorld.Surface(DiceTuning.FRICTION, 0, 0));
+        assertTrue(sticky < ordinary / 2, "slid " + sticky + " on a sticky floor against " + ordinary);
     }
 
     @Test

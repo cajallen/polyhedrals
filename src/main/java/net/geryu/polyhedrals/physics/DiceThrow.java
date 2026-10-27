@@ -17,7 +17,7 @@ public final class DiceThrow {
 
     private static final double HAND_HEIGHT = 0.9;
     private static final double HAND_REACH = 0.35;
-    private static final double HAND_SIDE = 0.25;
+    private static final double HAND_SIDE = 0.35;
 
     private static final double LOB_FORWARD = 0.25;
     private static final double LOB_LIFT = 0.4;

@@ -8,6 +8,7 @@ public final class DiceTuning {
     public static final double RESTITUTION = 0.15;
     public static final double BOUNCE_THRESHOLD = 0.8;
     public static final double FRICTION = 0.38;
+    public static final double STICKY_DRAG = 60.0;
     public static final double THROW_SPIN = 11.0;
     public static final double LINEAR_DAMPING_PER_SECOND = 0.20;
     public static final double ANGULAR_DAMPING_PER_SECOND = 0.75;
